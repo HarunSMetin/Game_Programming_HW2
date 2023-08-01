@@ -1,8 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Xml.Linq;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
@@ -29,6 +31,13 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    [Header("Player UI")]
+    public GameObject PlayerPoint;
+    public TMP_Text PlayerNameTMP;
+    public TMP_Text PlayerHP;
+    public Slider PlayerHPSlider;
+
+
     [Header("Prefabs")]
     public GameObject[] Characters;
     public GameObject[] Weapons;
@@ -39,19 +48,44 @@ public class GameManager : MonoBehaviour
     public GameObject currentWeapon;
     public GameObject currentEq;
 
-    public enum difficulty { easy, medium, hard };
-    difficulty currentDiff = difficulty.easy;
+    public GameData.difficulty currentDiff;
+    public GameData.character currentCharData;
+    public GameData.weapon currentWeaponData;
+    public GameData.eq currentEqData;
+
 
     [Header("PauseMenu")]
     public GameObject PauseMenu;
 
-    void Start()
+    [Header("Game Values")]
+    public float HP = 50;
+    public int totalFire=0;
+    public int totalHit=0;
+    public int totalKill=0;
+    public int totalDamage=0;
+
+    void MakeHp()
     {
+        PlayerHP.text = "%"+HP.ToString();
+        PlayerHPSlider.value = HP;
+    }
+
+    void Awake()
+    { 
+        currentDiff = (GameData.difficulty)PlayerPrefs.GetInt("Diff");
+        currentCharData = (GameData.character)PlayerPrefs.GetInt("Char");
+        currentWeaponData = (GameData.weapon)PlayerPrefs.GetInt("Weapon"); 
+        currentEqData = (GameData.eq)PlayerPrefs.GetInt("Eq");
+
         playerName = PlayerPrefs.GetString("UserName");
-        currentChar = Characters[PlayerPrefs.GetInt("Char")];
-        currentWeapon = Weapons[PlayerPrefs.GetInt("Weapon")];
-        currentEq = Eqs[PlayerPrefs.GetInt("Eq")];
-        currentDiff = (difficulty)PlayerPrefs.GetInt("Diff");
+        currentChar = Characters[(int)currentCharData];
+        currentWeapon = Weapons[(int)currentWeaponData];
+        currentEq = Eqs[(int)currentEqData];
+
+        PlayerNameTMP.text = playerName;
+        MakeHp();
+
+        Instantiate(currentChar, PlayerPoint.transform.position, PlayerPoint.transform.rotation, PlayerPoint.transform);
 
     }
 
