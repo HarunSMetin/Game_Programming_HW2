@@ -2,86 +2,76 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.SocialPlatforms;
 using static GameData;
 
 public class PlayerManager : MonoBehaviour
 {
-
     [Header("Player Values")]
     public Camera TPCam;
     public Camera FPCam;
-
-    [Header("Player Values")]
-    public float HP = 50;
-    public int totalFire = 0;
-    public int totalHit = 0;
-    public int totalKill = 0;
-    public int totalDamage = 0;
-
+    
     GameObject CharacterObject;
-    Animator  animator;
+    Animator animator;
     Camera currentCam;
 
     [Header("")]
-    public Transform gunBarrel; // Silahýn namlusunun pozisyonu
-    public GameObject bulletPrefab; // Ateþ edilecek mermi (bullet) prefab'i
-
+    GameObject weaponMuzzle;
+    LineRenderer lineRenderer;
     public float rotationSpeed = 1000f;
     public float maxEnergy = 100f;
-    public float energyIncreaseRate = 20f; 
-     
-    private bool isAiming = false; 
+    public float energyIncreaseRate = 20f;
+
+    private bool isAiming = false;
     private bool isLRF = false;
     private float chargeTime = 0f;
-    Weapon myWeapon;
 
+
+    Weapon myWeapon;
     private void Start()
     {
+
         currentCam = TPCam;
         CharacterObject = GameObject.FindGameObjectsWithTag("Player")[0];
-        animator = CharacterObject.GetComponent<Animator>();   
-        switch (GameManager.Instance.currentEqData)
-        {
-            case GameData.eq.eq1:
-
-                break;
-            case GameData.eq.eq2:
-
-                break;
-            case GameData.eq.eq3:
-
-                break;
-        } 
+        lineRenderer = GetComponent<LineRenderer>();
+        animator = CharacterObject.GetComponent<Animator>();
         myWeapon = new Weapon();
+        weaponMuzzle = GameObject.Find("WeaponMuzzle");
+
+
+        GameManager.Instance.WeaponBattery.text = myWeapon.currentBatteryCapacity.ToString();
+        GameManager.Instance.LeftEnemy.text = EnemyManager.Instance.enemyCount.ToString();
     }
     private void Update()
     {
-        myWeapon.CoolingForUpdate();
-        HandleRotation();
+        if (!GameManager.Instance.isDied)
+        {
+            myWeapon.CoolingForUpdate();
+            HandleRotation();
 
-        if (!isAiming && Input.GetMouseButton(1))
-        {
-            StartAim();
-        }
-        else if (Input.GetMouseButtonUp(1))
-        {
-            StopAim();
-        }
-        
-        if ( myWeapon.IsReadyToFire() && isAiming && Input.GetMouseButton(0))
-        {
-            //Debug.Log("chargeTime: " + chargeTime);
-            if (chargeTime<5)
-                chargeTime+=Time.deltaTime;
-        }
-        else if (isAiming && Input.GetMouseButtonUp(0))
-        {
-            FireBullet();
-             
+            if (!isAiming && Input.GetMouseButton(1))
+            {
+                StartAim();
+            }
+            else if (Input.GetMouseButtonUp(1))
+            {
+                StopAim();
+            }
 
-            chargeTime =0;
+            if (myWeapon.IsReadyToFire() && isAiming && Input.GetMouseButton(0))
+            {
+                //Debug.Log("chargeTime: " + chargeTime);
+                if (chargeTime < 5)
+                    chargeTime += Time.deltaTime;
+            }
+            else if (isAiming && Input.GetMouseButtonUp(0))
+            {
+                FireBullet();
+                chargeTime = 0;
+            }
         }
+
 
         if (Input.GetKeyUp(KeyCode.E))
         {
@@ -150,49 +140,97 @@ public class PlayerManager : MonoBehaviour
     private void StopAim()
     {
         animator.SetBool("Aim", false);
-        isAiming = false; 
+        isAiming = false;
     }
-     
+
 
     private void FireBullet()
     {
-        animator.SetBool("Shoot", true); 
-        Physics.Raycast(currentCam.transform.position, currentCam.transform.forward, out RaycastHit hit, myWeapon.range); 
-        if  (hit.transform != null && hit.transform.tag == "Enemy")
-        {
-            Enemy enemy = hit.transform.parent.GetComponent<Enemy>();  
-            myWeapon.FireProcedure(chargeTime, Vector3.Distance(enemy.transform.position,CharacterObject.transform.position));
-            enemy.TakeDamage(myWeapon.damage); 
+        animator.SetBool("Shoot", true);
 
-        }
-        else if (hit.transform == null )
+        GameManager.Instance.totalFireRate++;
+        lineRenderer.SetPosition(0, weaponMuzzle.transform.position);
+
+        if (Physics.Raycast(currentCam.transform.position, currentCam.transform.forward, out RaycastHit hit, myWeapon.range))
         {
-            myWeapon.FireProcedure(chargeTime, myWeapon.range);
+            if (hit.transform.tag == "Enemy")
+            {
+
+                Enemy enemy = hit.transform.GetComponent<Enemy>();
+                myWeapon.FireProcedure(chargeTime, Vector3.Distance(enemy.transform.position, CharacterObject.transform.position));
+                float verilenHassar = myWeapon.damage;
+                enemy.TakeDamage(verilenHassar, Vector3.Distance(hit.point, CharacterObject.transform.position)); 
+                GameManager.Instance.totalDamage = GameManager.Instance.totalDamage + verilenHassar; 
+                GameManager.Instance.totalHit++;
+
+            }
+            else
+            {
+                myWeapon.FireProcedure(chargeTime, Vector3.Distance(hit.point, CharacterObject.transform.position));
+            }
+            lineRenderer.SetPosition(1, hit.point);
+
         }
         else
         {
-            myWeapon.FireProcedure(chargeTime, Vector3.Distance(hit.point, CharacterObject.transform.position));
+            myWeapon.FireProcedure(chargeTime, myWeapon.range);
+            lineRenderer.SetPosition(1, currentCam.transform.position + currentCam.transform.forward * myWeapon.range);
         }
+        StartCoroutine(LaserFire());
+    }
+    IEnumerator LaserFire()
+    {
+        lineRenderer.enabled = true;
+        yield return new WaitForSeconds(0.1f);
+        lineRenderer.enabled = false;
     }
     private void EnterLRFMode()
     {
+        FPCamView();
+        GameManager.Instance.LRFVision.gameObject.SetActive(true);
         RenderSettings.fogEndDistance = 30;
     }
     private void ExitLRFMode()
     {
+
+        GameManager.Instance.LRFVision.gameObject.SetActive(false);
         RenderSettings.fogEndDistance = 7;
     }
-    void TPCamView()
+    public void TPCamView()
     {
         TPCam.gameObject.SetActive(true);
         FPCam.gameObject.SetActive(false);
     }
-    void FPCamView()
+    public void FPCamView()
     {
         TPCam.gameObject.SetActive(false);
         FPCam.gameObject.SetActive(true);
     }
+    public void dieCam()
+    {
+        TPCamView(); 
+        GameManager.Instance.LRFVision.gameObject.SetActive(false);
+        animator.SetBool("Die", true);
+    }
+    void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject.tag == "Enemy")
+        {
+            GameManager.Instance.isDied = true;
+            Debug.Log("Trigger Enemy");
+            GameManager.Instance.HP = 0;
+            GameManager.Instance.MakeHp();
+            StartCoroutine(waitCoroutine());
+            dieCam();
 
+        }
+    }
+    IEnumerator waitCoroutine()
+    {
+        yield return new WaitForSeconds(5);
+        GameManager.Instance.EndGame();
+
+    }
 }
 
 public class Weapon
@@ -211,14 +249,15 @@ public class Weapon
 
     public float currentTemperature;
     public bool inCooling;
-    private float coolingTempPerSecond=10f;
+    private float coolingTempPerSecond = 10f;
 
 
     public Weapon()
     {
         this.range = GetWeaponRange();
         this.batteryCapacity = GetWeaponBattaryCapacity();
-        this.currentTemperature=20f;
+        this.currentTemperature = 20f;
+        currentBatteryCapacity= batteryCapacity;    
     }
 
     float CalculateLE(float ELD)
@@ -229,7 +268,11 @@ public class Weapon
     float CalculateCurrentBattaryCapacity(float ELD)
     {
         CalculateLE(ELD);
-        currentBatteryCapacity = batteryCapacity - LE;
+        currentBatteryCapacity = currentBatteryCapacity - LE;
+        if (currentBatteryCapacity <= 0)
+        {
+            currentBatteryCapacity = 0;
+        }
         return currentBatteryCapacity;
     }
     float CalculateUER(float ELD, float distanceToEnemy)
@@ -259,26 +302,29 @@ public class Weapon
                 coolingDurationCounter = 0;
                 inCooling = false;
             }
+            GameManager.Instance.WeaponTemp.text = currentTemperature.ToString(); 
         }
     }
     float CalculateCoolingDuration(float ELD)
-    { 
+    {
         currentTemperature += 10 * ELD;
         CD = Mathf.Pow(2, currentTemperature / 10) / Mathf.Pow(2, currentTemperature / 20);
-        coolingTempPerSecond =(currentTemperature - 20)/CD;
+        coolingTempPerSecond = (currentTemperature - 20) / CD;
         return CD;
-    } 
-    public void FireProcedure(float ELD,float distanceToEnemy)
+    }
+    public void FireProcedure(float ELD, float distanceToEnemy)
     {
-        inCooling=true;
+
+        GameManager.Instance.WeaponBattery.text = currentBatteryCapacity.ToString();
         CalculateDamage(ELD, distanceToEnemy);
         CalculateCoolingDuration(ELD);
-        CalculateCurrentBattaryCapacity(ELD); 
+        CalculateCurrentBattaryCapacity(ELD);
+        inCooling = true;
     }
 
     public bool IsReadyToFire()
     {
-        if (inCooling || currentTemperature>20)
+        if (inCooling && currentTemperature > 20 && currentBatteryCapacity>0)
         {
             return false;
         }
@@ -305,11 +351,11 @@ public class Weapon
     {
         switch (GameManager.Instance.currentWeaponData)
         {
-            case GameData.weapon.weapon1:
+            case weapon.weapon1:
                 return 5000f;
-            case GameData.weapon.weapon2:
+            case weapon.weapon2:
                 return 10000f;
-            case GameData.weapon.weapon3:
+            case weapon.weapon3:
                 return 15000f;
             default:
                 return 5000f;

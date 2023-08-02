@@ -4,10 +4,35 @@ using UnityEngine;
 
 public class EnemyManager : MonoBehaviour
 {
+    private static EnemyManager instance;
+    public static EnemyManager Instance
+    {
+        get
+        {
+            if (instance == null)
+            {
+                var go = GameObject.Find("/Enemy Manager");
+                if (go == null)
+                {
+                    return null;
+                }
+
+                instance = go.GetComponent<EnemyManager>();
+                if (instance == null)
+                {
+                    return null;
+                }
+            }
+            return instance;
+        }
+    }
+
     public GameObject[] enemyPrefabs; // X, Y ve Z tipi düþman prefab'leri
     public int enemyCount = 10; // Düþman sayýsý
     public float spawnRadius = 7f; // Oyuncu etrafýnda yaratýlmamasý için 0,0,0 noktasýna olan uzaklýk
     public float rangeOfPlayground = 100f;  
+
+    float healthParam = 0.1f;
     private void Start()
     {
         PlaceEnemies();
@@ -23,18 +48,24 @@ public class EnemyManager : MonoBehaviour
             GameObject CreatedEnemy = Instantiate(randomEnemyPrefab, randomPosition, Quaternion.identity);
 
             Enemy e = CreatedEnemy.GetComponent<Enemy>();
+            e.isAlive = true;
             switch (randomEnemyPair.Value)
             {
                 case 0:
-                    e.health = 100;
+                    e.health = 1000* healthParam;
+                    e.slider.maxValue = 1000 * healthParam; 
                     break;
                 case 1:
-                    e.health = 150;
+                    e.health = 1500 * healthParam;
+                    e.slider.maxValue = 1500 * healthParam;
                     break;
                 case 2:
-                    e.health = 200;
+                    e.health = 2000 * healthParam;
+                    e.slider.maxValue = 2000 * healthParam; 
                     break;
             }
+
+            e.slider.minValue = 0;
         }
     }
 
