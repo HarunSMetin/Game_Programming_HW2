@@ -39,7 +39,6 @@ public class PlayerManager : MonoBehaviour
         myWeapon = new Weapon();
         weaponMuzzle = GameObject.Find("WeaponMuzzle");
 
-
         GameManager.Instance.WeaponBattery.text = myWeapon.currentBatteryCapacity.ToString();
         GameManager.Instance.LeftEnemy.text = EnemyManager.Instance.enemyCount.ToString();
     }
@@ -104,7 +103,7 @@ public class PlayerManager : MonoBehaviour
     private void LateUpdate()
     {
         animator.SetBool("Shoot", false);
-    }
+    } 
 
     private void HandleRotation()
     {

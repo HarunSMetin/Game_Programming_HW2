@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting.Antlr3.Runtime.Collections;
 using UnityEngine;
 
 public class EnemyManager : MonoBehaviour
@@ -31,6 +32,7 @@ public class EnemyManager : MonoBehaviour
     public int enemyCount = 10; // Düþman sayýsý
     public float spawnRadius = 7f; // Oyuncu etrafýnda yaratýlmamasý için 0,0,0 noktasýna olan uzaklýk
     public float rangeOfPlayground = 100f;  
+    public HashSet<GameObject> createdEnemies = new HashSet<GameObject>(); // Oyunda bulunan düþmanlar
 
     float healthParam = 0.1f;
     private void Start()
@@ -46,7 +48,7 @@ public class EnemyManager : MonoBehaviour
             GameObject randomEnemyPrefab = randomEnemyPair.Key;
            
             GameObject CreatedEnemy = Instantiate(randomEnemyPrefab, randomPosition, Quaternion.identity);
-
+            createdEnemies.Add(CreatedEnemy);
             Enemy e = CreatedEnemy.GetComponent<Enemy>();
             e.isAlive = true;
             switch (randomEnemyPair.Value)
