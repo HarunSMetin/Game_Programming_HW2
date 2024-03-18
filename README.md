@@ -1,5 +1,5 @@
 
-Detailed Explanation Video [Click Here to Access "Odev2.mp4"](https://github.com/HarunSMetin/Game_Programming_HW2/blob/main/Odev2.mp4)
+Detailed Explanation Video [Click Here to Access "Odev2.mp4"](https://drive.google.com/file/d/1z48Jh1MfLMD8zVTCe-4dWc8doKezilX0/view?usp=sharing)
 
 
 #### The 3 most challenging parts of this assignment for me:
