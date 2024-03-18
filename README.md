@@ -1,5 +1,6 @@
 
-Detaylı Anlatım Videosuna [Buraya Tıklayarak](https://github.com/HarunSMetin/Game_Programming_HW2/blob/main/Odev2.mp4) Ulaşabilirsiniz
+Detaylı Anlatım Videosuna [Buraya Tıklayarak "Odev2.mp4"](https://github.com/HarunSMetin/Game_Programming_HW2/blob/main/Odev2.mp4) Ulaşabilirsiniz
+
 
 ### Bu ödevde beni en çok zorlayan 3 kısım:
 
