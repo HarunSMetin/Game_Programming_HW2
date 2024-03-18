@@ -1,14 +1,14 @@
 
-Detaylı Anlatım Videosuna [Buraya Tıklayarak "Odev2.mp4"](https://github.com/HarunSMetin/Game_Programming_HW2/blob/main/Odev2.mp4) Ulaşabilirsiniz
+Detailed Explanation Video [Click Here to Access "Odev2.mp4"](https://github.com/HarunSMetin/Game_Programming_HW2/blob/main/Odev2.mp4)
 
 
-### Bu ödevde beni en çok zorlayan 3 kısım:
+#### The 3 most challenging parts of this assignment for me:
 
-  - Düşmanların üstüne can barı ekleyerek aldıkları hasara gore can barını değiştirmek
+  - Adding a health bar on enemies and changing the health bar according to the damage they take
 
-  - UI nesnelerini kullanıcı dostu ve göze güzel görünecek şekilde düzenlemek
+  - Organizing UI objects to be user-friendly and pleasing to the eye
 
-  - LRF Kısmı
+  - LRF Part
 
 
-Bu zorlukların hepsini internetten tutoriallar izleyerek kendi isteğime göre modifike ederek çözmeye çalıştım.
+I tried to solve all these difficulties by watching tutorials on the internet and modifying them according to my own wishes.
